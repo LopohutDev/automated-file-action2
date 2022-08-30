@@ -1,0 +1,50 @@
+name: Create Release Branch
+on: [push]
+
+jobs:
+  Create-Release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +"%Y-%m-%dT%H-%M-%S%z")"
+      - name: date
+        run: |
+          echo ${{steps.date.outputs.date}}
+        # working-directory: SDK
+      - name: Checkout Code
+        uses: LopohutDev/checkout@main
+        with:
+          repository: LopohutDev/automated-file-action2
+          ref: "master"
+          token: ${{ secrets.GH_TOKEN }}
+          submodules: true
+      - name: Create release branch
+        run: git checkout -b release/${{steps.date.outputs.date}}
+      - name: Initialize mandatory git config
+        run: |
+          git config user.name "LopohutDev"
+          git config user.email noreply@github.com
+      - name: Change version number and name
+        run: printf 'ext.version_date=${{steps.date.outputs.date}}' > app_versions.gradle
+      - name: Commit changelog and manifest files
+        id: make-commit
+        run: |
+          git add
+          git commit --message "Prepare release ${{steps.date.outputs.date}}"
+          echo "::set-output name=commit::$(git rev-parse HEAD)"
+      - name: Push new branch
+        run: git push origin release/${{steps.date.outputs.date}}
+      - name: Create pull request into main
+        uses: LopohutDev/create-pull-request@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN  }}
+          head: release/${{steps.date.outputs.date}}
+          repository: LopohutDev/automated-action2
+          base: main
+          title: ${{steps.date.outputs.date}} into main
+          reviewers: ${{ github.event.issue.user.login }}
+          body: |
+            Hi!
+            This PR was created in response workflow running.
+            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
