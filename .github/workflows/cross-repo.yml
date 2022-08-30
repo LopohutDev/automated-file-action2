@@ -11,7 +11,6 @@ jobs:
       - name: date
         run: |
           echo ${{steps.date.outputs.date}}
-        # working-directory: SDK
       - name: Checkout Code
         uses: LopohutDev/checkout@main
         with:
@@ -30,7 +29,6 @@ jobs:
       - name: Commit changelog and manifest files
         id: make-commit
         run: |
-          git add
           git commit --message "Prepare release ${{steps.date.outputs.date}}"
           echo "::set-output name=commit::$(git rev-parse HEAD)"
       - name: Push new branch
