@@ -2,7 +2,7 @@ name: Create Release Branch
 on:
   push:
     branches:
-      - "main"
+      - "master"
 jobs:
   Create-Release:
     runs-on: ubuntu-latest
